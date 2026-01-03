@@ -1,0 +1,155 @@
+<html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My Library System</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        padding: 20px;
+    }
+    h1, h2 {
+        color: #333;
+    }
+    section {
+        background: white;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+    }
+    input, button, select {
+        padding: 8px;
+        margin: 5px 0;
+        width: 100%;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+    th, td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+    }
+    th {
+        background: #eee;
+    }
+</style>
+</head>
+<body>
+
+<h1>📚 The Ramaiya Library</h1>
+
+<section>
+    <h2>Add Book</h2>
+    <input id="bookTitle" placeholder="Book Title">
+    <input id="bookAuthor" placeholder="Author">
+    <input id="bookBarcode" placeholder="Barcode Number">
+    <button onclick="addBook()">Add Book</button>
+</section>
+
+<section>
+    <h2>Add Patron</h2>
+    <input id="patronName" placeholder="Patron Name">
+    <input id="patronId" placeholder="Patron ID">
+    <button onclick="addPatron()">Add Patron</button>
+</section>
+
+<section>
+    <h2>Check Out / Return Book</h2>
+    <select id="bookSelect"></select>
+    <select id="patronSelect"></select>
+    <button onclick="checkoutBook()">Check Out</button>
+    <button onclick="returnBook()">Return</button>
+</section>
+
+<section>
+    <h2>Book Catalog</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Barcode</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="bookTable"></tbody>
+    </table>
+</section>
+
+<script>
+let books = JSON.parse(localStorage.getItem("books")) || [];
+let patrons = JSON.parse(localStorage.getItem("patrons")) || [];
+
+function save() {
+    localStorage.setItem("books", JSON.stringify(books));
+    localStorage.setItem("patrons", JSON.stringify(patrons));
+    render();
+}
+
+function addBook() {
+    books.push({
+        title: bookTitle.value,
+        author: bookAuthor.value,
+        barcode: bookBarcode.value,
+        checkedOutTo: null
+    });
+    bookTitle.value = bookAuthor.value = bookBarcode.value = "";
+    save();
+}
+
+function addPatron() {
+    patrons.push({
+        name: patronName.value,
+        id: patronId.value
+    });
+    patronName.value = patronId.value = "";
+    save();
+}
+
+function checkoutBook() {
+    const book = books[bookSelect.value];
+    const patron = patrons[patronSelect.value];
+    if (book && patron && !book.checkedOutTo) {
+        book.checkedOutTo = patron.name;
+        save();
+    }
+}
+
+function returnBook() {
+    const book = books[bookSelect.value];
+    if (book) {
+        book.checkedOutTo = null;
+        save();
+    }
+}
+
+function render() {
+    bookTable.innerHTML = "";
+    bookSelect.innerHTML = "";
+    patronSelect.innerHTML = "";
+
+    books.forEach((b, i) => {
+        bookTable.innerHTML += `
+            <tr>
+                <td>${b.title}</td>
+                <td>${b.author}</td>
+                <td>${b.barcode}</td>
+                <td>${b.checkedOutTo ? "Out to " + b.checkedOutTo : "Available"}</td>
+            </tr>`;
+        bookSelect.innerHTML += `<option value="${i}">${b.title}</option>`;
+    });
+
+    patrons.forEach((p, i) => {
+        patronSelect.innerHTML += `<option value="${i}">${p.name}</option>`;
+    });
+}
+
+render();
+</script>
+
+</body>
+</html>
